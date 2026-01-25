@@ -7,51 +7,25 @@ from django.shortcuts import (
 )
 from django.db.models import F
 from django.urls import reverse
+from django.views import generic
 
 
-def index(request):
-    lastest_questions = Question.objects.order_by("-pub_date")[:5]
-    # print(lastest_questions)
-    index_template = loader.get_template("polls/index.html")
-    return HttpResponse(
-        index_template.render(
-            {"latest_question_list": lastest_questions},
-            request,
-        )
-    )
+class IndexView(generic.ListView):
+    template_name = "polls/index.html"
+    context_obj_name = "latest_question_list"
+
+    def get_queryset(self):
+        return Question.objects.order_by("-pub_date")[:5]
 
 
-def index_second(request):
-    lastest_question = Question.objects.order_by("-pub_date")[:5]
-    return render(
-        request,
-        "polls/index.html",
-        {
-            "latest_question_list": lastest_question,
-        },
-    )
+class DetailView(generic.DetailView):
+    model = Question
+    template_name = "polls/detail.html"
 
 
-def detail(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    return render(
-        request,
-        "polls/detail.html",
-        {
-            "question": question,
-        },
-    )
-
-
-def results(request, question_id):
-    question = get_object_or_404(Question, pk=question_id)
-    return render(
-        request,
-        "polls/results.html",
-        {
-            "question": question,
-        },
-    )
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = "polls/results.html"
 
 
 def vote(request, question_id):
