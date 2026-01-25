@@ -1,0 +1,41 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Django: 调试 polls app",
+            "type": "debugpy", // Python 扩展自带
+            "request": "launch",
+            "program": "${workspaceFolder}/djangotutorial/manage.py",
+            "args": [
+                "test",
+                "polls"
+            ],
+            "django": true,
+            "justMyCode": false // 设为 false 才能单步进入 Django 源码/第三方包
+        },
+        {
+            "name": "Django: 调试单个测试用例",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/djangotutorial/manage.py",
+            "args": [
+                "test",
+                "${relativeFile}::${selectedText}"
+            ], // 选中的函数名
+            "django": true,
+            "justMyCode": false
+        },
+        {
+            "name": "pytest: 调试当前测试",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "${relativeFile}",
+                "-v",
+                "--no-cov"
+            ],
+            "justMyCode": false
+        }
+    ]
+}
