@@ -13,7 +13,7 @@ from django.utils import timezone
 
 class IndexView(generic.ListView):
     template_name = "polls/index.html"
-    context_obj_name = "latest_question_list"
+    context_object_name = "latest_question_list"
 
     def get_queryset(self):
         return Question.objects.filter(pub_date__lte=timezone.now()).order_by(
