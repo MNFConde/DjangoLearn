@@ -36,6 +36,15 @@
                 "--no-cov"
             ],
             "justMyCode": false
-        }
+        },
+        {
+            "name": "Django: runserver + 单步",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/djangotutorial/manage.py",
+            "args": ["runserver", "--noreload"],   // --noreload 防止双进程
+            "django": true,
+            "justMyCode": false                    // 可跳进 Django 源码
+        },
     ]
 }
