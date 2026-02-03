@@ -22,3 +22,4 @@ django 中有许多的固定的属性名，不能随便更改
 ### django 使用方法记录
 1. 在修改 css 后发现网页端未生效：可能是因为浏览器缓存的原因，使用 Ctrl+Shift+R 来硬刷新
 2. 通过 django shell 来查看记录，如：`Question.objects.first()` 取出记录，然后可以用点语法来查看属性
+3. BASE_DIR 指的是与 manage.py 同级别的路径
