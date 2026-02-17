@@ -26,4 +26,5 @@ if not settings.TESTING:
     urlpatterns = [
         path("admin/", admin.site.urls),
         path("polls/", include("polls.urls")),
+        path("blogs/", include("blogs.urls")),
     ] + debug_toolbar_urls()
