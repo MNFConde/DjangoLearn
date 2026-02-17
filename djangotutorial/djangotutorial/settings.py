@@ -42,6 +42,7 @@ if not TESTING:
         "django.contrib.messages",
         "django.contrib.staticfiles",
         "polls.apps.PollConfig",
+        "blogs.apps.BlogsConfig",
         "debug_toolbar",
     ]
 
