@@ -14,8 +14,8 @@
 
 ### django.db.models
 1. db_index=True：为该字段自身创建索引（除去自动添加索引的情况），也可以使用 Meta 类下的 indexes
-2. Meta.indexes ：自定义索引，在对应的 Model 类下的 META 类中指定 indexes，可以设定单列索引也可以设置多列索引，比 db_index 更加灵活
-    1. fields：必选，字段列表（遵循最左前缀原则：查询条件必须从复合索引的最左边字段开始，连续匹配，才能有效利用索引）
+2. Meta.indexes ：自定义索引，在对应的 Model 类下的 META 类中指定 indexes，可以设定单列索引也可以设置多列索引，比 db_index 更加灵活；每一个 indexes 列表中的元素都由 `models.Index` 生成， 参数如下：
+    1. fields：必选，字段列表（遵循 `最左前缀原则` ：查询条件必须从复合索引的最左边字段开始，连续匹配，才能有效利用索引）
     2. name：非必选，索引名称
     3. condition：部分索引条件（PostgreSQL）
     4. opclasses：操作符类（PostgreSQL）
@@ -27,6 +27,7 @@
     4. 阻止删除（保护数据）     → PROTECT（不能删） / RESTRICT（要删一起删）。例：有商品的分类、有员工的部门
     5. 自定义逻辑               → SET(callable)。例：归档到特定用户、随机分配
     6. 数据库处理               → DO_NOTHING
+3. ManyToManyField 会自动创建中间表并处理索引，所以不需要手动为它创建索引
 
 ### django 交互式数据库 Api
 1. save 方法：对实例 a 使用 `a.save()` 可以将该实例存入对应类所代表的数据表中，创建或是对已存在的记录都可以使用该方法进行保存
