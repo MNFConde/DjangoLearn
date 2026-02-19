@@ -1,105 +1,63 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>探索小记</title>
-    <link rel="stylesheet" href="../../static/blogs/blogs_style.css">
-</head>
-<body>
-    <!-- 导航栏 -->
-    <nav class="navbar">
-        <div class="container nav-container">
-            <a href="#" class="logo">学习小记</a>
-            <p>分享探索时的随笔，以及觉得值得分享的东西</p>
-            <ul class="nav-menu">
-                <li><a href="#">文章</a></li>
-                <li><a href="#">关于</a></li>
-            </ul>
-        </div>  
-    </nav>
-    
-    {% comment %} 
-    需要传入的变量：
-        - article_info_list：
-            - datetime  ：日期时间信息
-            - tag_list  ：所有的 tag （前五个）
-            - title     ：文章标题
-            - excerpt   ：文章摘要（没有就从正文提取前100字）
-            - author    ：文章作者
-        - page_info
-            - all_page  : 总共需要多少页
-            - curr_page : 当前页
-    {% endcomment %}
-    <!-- 主内容区 -->
-    <main class="container main-container">
-        <!-- 文章列表 -->
-        <section class="article-list">
-            {% for article_info in article_info_list %}
-                <article class="article-card">
-                    <div class="article-meta">
-                        <span class="date">{{ article_info.datetime }}</span>
-                        {% for tag in article_info.tag_list %}
-                            <a href="#" class="article_tag">{{ tag }}</a>
-                        {% endfor %}
-                    </div>
-                    <h2 class="article-title">
-                        <a href="#">{{ article_info.title }}</a>
-                    </h2>
-                    <p class="article-excerpt">{{ article_info.excerpt }}</p>
-                    {% comment %} <div class="article-footer">
-                        <span class="author">{{ article_info.author }}</span>
-                    </div> {% endcomment %}
-                </article>
-            {% endfor %}
-                
-            <!-- 分页 -->
-            <div class="pagination">
-                <a href="#" class="page-btn active">1</a>
-                <a href="#" class="page-btn">2</a>
-                <a href="#" class="page-btn">3</a>
-                <span class="page-ellipsis">...</span>
-                <a href="#" class="page-btn">10</a>
-                <a href="#" class="page-btn next">下一页 →</a>
-            </div>
-        </section>
+{% extends "blogs/base.html" %}
 
-        <!-- 侧边栏 -->
-        <aside class="sidebar">
-            <!-- 个人简介 -->
-            <div class="widget profile">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="头像" class="avatar">
-                <h3>张三</h3>
-                <p>全栈开发者，热爱开源和技术分享。专注于 Python、Django 和前端技术。</p>
-                <div class="social-links">
-                    <a href="#">GitHub</a>
-                    <a href="#">邮箱</a>
+{% comment %} 
+需要传入的变量：
+    - article_info_list：
+        - datetime_info     ：日期时间信息
+        - tag_list          ：所有的 tag （前五个）
+            - name          : tag 名称
+            - link          : tag 链接
+        - title             ：文章标题
+        - excerpt           ：文章摘要（没有就从正文提取前100字）
+        - author            ：文章作者
+        - article_link      : 文章链接
+    - tag_list              : 当前所有 tag 的列表，按照文章个数排序
+        - name              ：tag 名
+        - link              ：链接
+{% endcomment %}
+{% block page_main %}
+<!-- 主内容区 -->
+<main class="container main-container">
+    <!-- 文章列表 -->
+    <section class="article-list">
+        {% for article_info in article_info_list %}
+            <article class="article-card">
+                <div class="article-meta">
+                    <span class="date">{{ article_info.datetime_info }}</span>
+                    {% for tag in article_info.tag_list %}
+                        <a href="{{ tag.link }}" class="article_tag">{{ tag.name }}</a>
+                    {% endfor %}
                 </div>
+                <h2 class="article-title">
+                    <a href="{{ article_info.article_link }}">{{ article_info.title }}</a>
+                </h2>
+                <p class="article-excerpt">{{ article_info.excerpt }}</p>
+            </article>
+        {% endfor %}
+    </section>
+
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <!-- 个人简介 -->
+        <div class="widget profile">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="头像" class="avatar">
+            <h3>张三</h3>
+            <p>全栈开发者，热爱开源和技术分享。专注于 Python、Django 和前端技术。</p>
+            <div class="social-links">
+                <a href="#">GitHub</a>
+                <a href="#">邮箱</a>
             </div>
-
-            <!-- 标签云 -->
-            <div class="widget">
-                <h3 class="widget-title">热门标签</h3>
-                <div class="tag-cloud">
-                    <a href="#" class="tag">Python</a>
-                    <a href="#" class="tag">Django</a>
-                    <a href="#" class="tag">CSS</a>
-                    <a href="#" class="tag">PostgreSQL</a>
-                    <a href="#" class="tag">Docker</a>
-                    <a href="#" class="tag">Vue.js</a>
-                    <a href="#" class="tag">Linux</a>
-                    <a href="#" class="tag">Git</a>
-                </div>
-            </div>
-
-        </aside>
-    </main>
-
-    <!-- 页脚 -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; 2026 01am 的探索小记. 使用 Django 构建.</p>
         </div>
-    </footer>
-</body>
-</html>
+
+        <!-- 标签云 -->
+        <div class="widget">
+            <h3 class="widget-title">标签</h3>
+            <div class="tag-cloud">
+                {% for tag in tag_list %}
+                <a href="{{ tag.link }}" class="tag">{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </aside>
+</main>
+{% endblock page_main %}

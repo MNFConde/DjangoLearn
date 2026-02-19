@@ -9,3 +9,72 @@ dependencies = [
     "django-debug-toolbar>=6.2.0",
     "requests>=2.32.5",
 ]
+
+[dependency-groups]
+dev = [
+    "factory-boy>=3.3.3",
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "pytest-django>=4.12.0",
+    "pytest-xdist>=3.8.0",
+]
+
+# Pytest 设置
+[tool.pytest.ini_options]
+
+# Django 设置模块（必需）
+DJANGO_SETTINGS_MODULE = "djangotutorial.settings"
+
+# Python 测试文件匹配模式
+python_files = [
+    "test_*.py",
+    "*_test.py",
+    "tests.py",
+    "tests/*.py",
+]
+python_classes = ["Test*", "*Tests"]
+python_functions = ["test_*", "*_test"]
+
+# 测试目录路径
+testpaths = [
+    "tests",
+    "apps/*/tests",
+]
+
+# 默认命令行选项
+addopts = [
+    "-v",                    # 详细输出
+    "--tb=short",            # 短 traceback 格式
+    "--strict-markers",      # 严格标记检查
+    "--reuse-db",            # 重用测试数据库
+    "--nomigrations",        # 跳过迁移（加速）
+    
+    # 覆盖率
+    "--cov=myproject",
+    # "--cov-report=term-missing:skip-covered",
+    # "--cov-report=html:reports/coverage",
+    # "--cov-report=xml:reports/coverage.xml",
+    "--cov-branch",
+    # "--cov-fail-under=80",  # 覆盖率低于80%失败
+]
+
+# pytest-django
+django_find_project = true
+django_debug_mode = false
+
+# Pytest 覆盖率
+[tool.coverage.run]
+parallel = true     # 多进程/并行测试时，先收集分散数据，再合并
+concurrency = ["multiprocessing", "thread"]
+source = ["djangotutorial"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/venv/*",
+    "manage.py",
+    "wsgi.py",
+    "asgi.py",
+    "settings/*",
+    "template/*",
+    "*.sqlite*",
+]

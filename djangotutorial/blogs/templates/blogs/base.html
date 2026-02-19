@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>探索小记</title>
+    <link rel="stylesheet" href="../../static/blogs/blogs_style.css">
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">学习小记</a>
+            <p>分享探索时的随笔，以及觉得值得分享的东西</p>
+            <ul class="nav-menu">
+                <li><a href="#">文章</a></li>
+                <li><a href="#">关于</a></li>
+            </ul>
+        </div>  
+    </nav>
+    
+    {% comment %} 
+    需要传入的变量：
+        - article_info_list：
+            - datetime_info     ：日期时间信息
+            - tag_list          ：所有的 tag （前五个）
+                - name          : tag 名称
+                - link          : tag 链接
+            - title             ：文章标题
+            - excerpt           ：文章摘要（没有就从正文提取前100字）
+            - author            ：文章作者
+            - article_link      : 文章链接
+        - page_info
+            - all_page          : 总共需要多少页
+            - curr_page         : 当前页
+    {% endcomment %}
+    <!-- 主内容区 -->
+    {% block page_main %}
+    {% endblock page_main %}
+    
+    <!-- 分页 -->
+    <!-- 分页导航 -->
+    <nav class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1" class="page-btn">首页</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="page-btn">上一页</a>
+        {% endif %}
+        
+        <span class="current-page">
+            第 {{ page_obj.number }} 页 / 共 {{ page_obj.paginator.num_pages }} 页
+        </span>
+        
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="page-btn">下一页</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="page-btn">末页</a>
+        {% endif %}
+    </nav>
+    
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 张三 的探索小记，使用 Django 构建.</p>
+        </div>
+    </footer>
+    
+</body>
+</html>
