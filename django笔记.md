@@ -82,6 +82,23 @@ django 中有许多的固定的属性名，不能随便更改
 ### django Pytest 测试
 #### pytest 注意事项
 1. pytest 更加推荐使用纯函数而非类方法来编写测试用例
+2. 如果 vscode 的测试部分无法找到用例，那么
+    1. 查看 pytest 配置是否正确（pyproject.toml 下的 \[tool.pytest.ini_options\]）
+    2. 查看 .vscode 下的 settings.json 文件是否配置正确，如：
+        ```json
+        {
+            "python.testing.pytestArgs": [
+                "djangotutorial/blogs/tests"
+            ],
+            "python.testing.unittestEnabled": false,
+            "python.testing.pytestEnabled": true,
+            "python.testing.autoTestDiscoverOnSaveEnabled": true,
+            "python.testing.pytestPath": "pytest" // 确保指向正确的 pytest 可执行文件
+        }
+        ```
+3. 如果单个用例调试时，不会在断点处停下来，那么：
+    1. 很有可能是因为指定了 -cov 参数，在 `pyproject.toml` 下的 `[tool.pytest.ini_options]` 中的 `addopts` 移除与 cov 相关的选项即可。vscode 测试中的运行覆盖率测试功能会在运行时自动添加该选项。[VS Code Pytest/Unittest debugger doesn't stop on breakpoints](https://stackoverflow.com/questions/73760110)
+    
 #### FactoryBoy 生成数据
 1. 定义工厂
     ```python
@@ -164,7 +181,7 @@ django 中有许多的固定的属性名，不能随便更改
             | `tzinfo`                    | 时区    | `date_time`             |
             | `locale`                    | 语言    | 全局或实例设置                 |
             | `pattern`                   | 格式字符串 | `date`, `time`          |
-        3. 自定义，需要自定义 `Provider`：
+        3. 自定义，需要使用原生的 `faker库` 自定义 `Provider`：
             ```python
             from faker.providers import BaseProvider
 

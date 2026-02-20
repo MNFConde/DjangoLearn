@@ -3,8 +3,10 @@ __pycache__/
 *.pyc
 
 # vscode
-.vscode
 *TODO
 
 # project
 script
+
+# pytest
+.coverage
