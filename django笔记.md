@@ -29,6 +29,76 @@
     6. 数据库处理               → DO_NOTHING
 3. ManyToManyField 会自动创建中间表并处理索引，所以不需要手动为它创建索引
 4. 应当优先使用通用视图来实现需求：[基于类的视图](https://docs.djangoproject.com/zh-hans/6.0/topics/class-based-views/)、[内置类视图 API](https://docs.djangoproject.com/en/6.0/ref/class-based-views/)
+5. 常用字段类型
+    1. 字符串类型
+        | 字段类型 | 说明 | 常用参数 |
+        |---------|------|---------|
+        | CharField | 普通字符串 | max_length |
+        | TextField | 长文本 | 无 |
+        | EmailField | 邮箱地址 | max_length |
+        | URLField | URL地址 | max_length |
+        | SlugField | 简短标签 | max_length |
+
+    2. 数字类型
+        | 字段类型 | 说明 | 常用参数 |
+        |---------|------|---------|
+        | IntegerField | 整数 | 无 |
+        | BigIntegerField | 大整数 | 无 |
+        | SmallIntegerField | 小整数 | 无 |
+        | PositiveIntegerField | 正整数 | 无 |
+        | FloatField | 浮点数 | 无 |
+        | DecimalField | 十进制数 | max_digits, decimal_places |
+
+    3. 日期时间类型
+        | 字段类型 | 说明 | 常用参数 |
+        |---------|------|---------|
+        | DateField | 日期 | auto_now, auto_now_add |
+        | TimeField | 时间 | auto_now, auto_now_add |
+        | DateTimeField | 日期时间 | auto_now, auto_now_add |
+        | DurationField | 持续时间 | 无 |
+
+    4. 布尔类型
+        | 字段类型 | 说明 | 常用参数 |
+        |---------|------|---------|
+        | BooleanField | 布尔值 | default |
+        | NullBooleanField | 可为空的布尔值 | 无 |
+
+    5. 文件类型
+        | 字段类型 | 说明 | 常用参数 |
+        |---------|------|---------|
+        | FileField | 文件上传 | upload_to |
+        | ImageField | 图片上传 | upload_to |
+
+    6. 关系字段
+        | 字段类型 | 说明 | 常用参数 |
+        |---------|------|---------|
+        | ForeignKey | 一对多关系 | to, on_delete |
+        | ManyToManyField | 多对多关系 | to |
+        | OneToOneField | 一对一关系 | to, on_delete |
+
+    7. 其他类型
+        | 字段类型 | 说明 | 常用参数 |
+        |---------|------|---------|
+        | JSONField | JSON数据 | 无 |
+        | GenericIPAddressField | IP地址 | 无 |
+        | UUIDField | UUID | 无 |
+
+    8. 通用字段参数
+        | 参数 | 说明 | 示例 |
+        |------|------|------|
+        | null | 数据库中允许为NULL | null=True |
+        | blank | 表单中允许为空 | blank=True |
+        | default | 默认值 | default='value' |
+        | unique | 唯一约束 | unique=True |
+        | db_index | 创建数据库索引 | db_index=True |
+        | primary_key | 主键 | primary_key=True |
+        | verbose_name | 字段显示名称 | verbose_name='Display Name' |
+        | help_text | 帮助文本 | help_text='Help text' |
+        | auto_now | 保存时自动更新时间 | auto_now=True |
+        | auto_now_add | 创建时自动设置时间 | auto_now_add=True |
+        | related_name | 反向关系名称 | related_name='related_name' |
+        | on_delete | 删除时的行为 | on_delete=models.CASCADE |
+
 
 ### django.core.paginator
 1. Paginator 分页器可以将查询数据按照指定的个数进行分组，如 `paginator = Paginator(article_list, 10)`
@@ -211,7 +281,7 @@ django 中有许多的固定的属性名，不能随便更改
             username = factory.Sequence(lambda n: f"user_{n:03d}")  # 生成 user_001, user_002...
             email = factory.Sequence(lambda n: f"user{n}@example.com")
         ```
-    4. 懒属性（LazyAttribute）：根据对象其他属性动态计算值（需要别的属性赋值了才能计算出来的属性）
+    4. 懒属性（LazyAttribute）：根据对象其他属性动态计算值（需要别的属性赋值了才能计算出来的属性）（LazyAttribute 不是一个 subscribe，不能在类型注释中写 LazyAttribute\[...\]）
         ```python
         class UserFactory(factory.django.DjangoModelFactory):
             class Meta:
@@ -319,9 +389,71 @@ django 中有许多的固定的属性名，不能随便更改
                 if extracted:
                     self.price = self.price * 0.85  # 15% off
         ```
-        
-        
+#### Faker 库
+FactoryBoy 内置的 Faker 使用字符串调用，且不能扩展，很麻烦
+##### random_element：从 subscribe 中随机选择一个元素
+random_element 是 Faker 库的随机的实现方式，它受到 `Faker.seed()` 设置的种子影响
+1. 给 random_element 一个普通的列表，它会等概率（每个元素机会均等）地随机选一个。
+2. 传入一个字典，其中 Key 是选项，Value 是权重，它会根据权重来随机选择。权重越高，被选中的概率越大。
+
+#### 事务机制
+事务机制的优势：
+
+- 测试隔离：每个测试都在干净的环境中运行
+- 性能优化：不需要真正写入磁盘，测试运行更快
+- 自动清理：不需要手动清理测试数据
+- 数据安全：测试失败不会污染数据库
+- 并行安全：多个测试可以并行运行
+
+事务隔离示例
+```python
+@pytest.mark.django_db
+class TestUserModel:
+    def test_create_user(self):
+        # 这个测试在独立事务中运行
+        User.objects.create(name="user1")
+        assert User.objects.count() == 1
+    
+    def test_create_another_user(self):
+        # 这是另一个独立的事务
+        # 前一个测试的数据已经被回滚
+        assert User.objects.count() == 0
+        User.objects.create(name="user2")
+        assert User.objects.count() == 1
+```
+
+#### 使用时遇到的问题记录
+1. 最好是使用 `LazyAttribute(lambda i: fn())` 这种形式给 LazyAttribute 传入函数参数，因为
+    ```python
+    class LazyAttribute:
+        def evaluate(self, instance, step, context):
+            return self.function(instance)  # 总是传入 instance 参数
+    ```
+    因此，如果传入参数需要一个
 
 ## Python 相关
 ### import
 1. `from . import views` 与 `import views` 的搜索起点不同，前者从当前文件的目录开始，后者从项目根目录（和 `sys.path`、PYTHONPATH 等）开始搜索
+
+### 装饰器
+#### 类装饰器
+1. `__init__` 方法会在实例化的时候被调用，`__call__` 方法会在使用 `()` 调用实例的时候执行
+2. 以 `@decorator_name` 装饰类 `class A` 时
+    1. `decorator_name` 会在 A 定义的时候执行 `decorator_name.__init__` ，这样实际上在定义结束时， `A` 指向的本质上是一个 `decorator_name` 的实例
+    2. `decorator_name` 会在 A 创建实例的时候执行 `decorator_name.__call__` ，然后在 call 方法中执行 `A.__init__`
+3. 装饰器 `__call__` 内返回函数要返回传入的函数，
+    ```python
+    def __call__(self):
+        def decorator(fn: Callable[..., Any]):
+            ...
+            return fn
+        return decorator
+    ```
+    是因为
+    1. 通过返回原始函数 fn，确保了函数的签名、文档字符串和其他属性都保持不变
+    2. 如果不返回原始函数，就无法支持多个装饰器的链式调用
+    3. 装饰器所做的所有额外操作对于被装饰的函数本身都是副作用，这些副作用都不应该影响函数本身的行为，所以返回原函数是最合适的
+    
+### 杂项
+1. lambda 中无法调用 `super()` 因为 `super()` 需要访问类的上下文
+2. 

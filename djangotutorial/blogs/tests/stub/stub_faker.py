@@ -1,53 +1,66 @@
 from blogs.util import singleton_args
-from random import randint
-from typing import Any, Type, TypeVar, Generic, Callable
+from typing import Any, Callable
 from factory import LazyAttribute
 from faker import Faker
 
-test_tag_list = (
-    "Python",
-    "C++",
-    "Rust",
-    "Go",
-    "Django",
-    "Flask",
-    "Pytest",
-)
-
 
 @singleton_args
-class FactoryFaker(Faker):
+class SimpleFactoryFaker:
     def __init__(self, name: str = ""):
-        self.__registry: dict[str, Callable[..., Any]] = dict()
-        self._name: str = name
-        super().__init__()
+        # name 参数是用来给 singleton_args 使用的，这里加入只是为了简化传参，给额外的这个参数找个地方
+        self.__registry: dict[str, LazyAttribute] = dict()
+        # 通过 self.faker 点符号来访问 Faker 类的方法和属性，与本类隔离
+        self.faker = Faker()
 
     def __call__(self, name: str) -> Callable:
-        def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
+        def decorator(fn: Callable[..., Any]) -> LazyAttribute:
             # 这里并不需要额外在调用函数时增加行为，所以就不创建子函数来调用 fn
             self.__registry[name] = fn
             return fn
 
         return decorator
 
-    def __getitem__(self, name: str) -> Callable[..., Any]:
-        return self.__registry[name]
-
-    def __setitem__(self, name: str, value: Callable[..., Any]) -> None:
-        self.__registry[name] = value
-
-    @property
-    def registry(self) -> dict[str, Callable[..., Any]]:
-        return self.__registry
-
-    def __getattr__(self, name: str) -> Any:
+    def __getattr__(self, name: str, **kwargs) -> LazyAttribute:
         """
         为了兼容 hasatttr
         """
         try:
             if name in self.__registry.keys():
-                return self.__registry[name]
+                # 获取未绑定的函数
+                unbound_method = self.__registry[name]
+                # 创建一个绑定方法，将 self (SimpleFactoryFaker 实例) 绑定上去
+                # MethodType(func, obj) 会返回一个已绑定的方法对象
+                from types import MethodType
+
+                faker_method = MethodType(unbound_method, self)
             else:
-                return super().__getattr__(name)
+                """
+                这里需要 Faker.__getattr__
+                1. getattr(self, name) 会导致递归
+                2. getattr(super(), name) super() 不能通过 getattr 来获取动态属性，原因如下，
+                    class Faker:
+                        def __init__(self):
+                            # Faker 的方法不是直接定义在类中的
+                            # 而是通过 providers 动态添加的
+                            self.providers = []
+                            # 添加各种 provider
+                            self.add_provider(misc_provider)
+                            self.add_provider(person_provider)
+                            # ...
+                        
+                        def __getattr__(self, name):
+                            # 当访问不存在的属性时，从 providers 中查找
+                            for provider in self.providers:
+                                if hasattr(provider, name):
+                                    return getattr(provider, name)
+                            raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{name}'")
+
+                3. Faker.__getattr__(self, name) 既可以访问父类的动态属性，又可以绕过递归 或者更简单的 super().__getattr__(name)
+                """
+                faker_method = getattr(self.faker, name)
         except Exception as e:
             raise AttributeError(e)
+
+        return LazyAttribute(
+            lambda i: faker_method(**kwargs)
+        )  # 这里不传 self 的原因：super().__getattr__(name) 返回的通常已经是一个绑定方法，对应的 self 已经绑定完毕
