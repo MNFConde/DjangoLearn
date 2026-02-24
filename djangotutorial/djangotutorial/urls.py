@@ -20,11 +20,11 @@ from django.urls import path, include
 
 from django.conf import settings
 
-if not settings.TESTING:
-    from debug_toolbar.toolbar import debug_toolbar_urls
 
-    urlpatterns = [
-        path("admin/", admin.site.urls),
-        path("polls/", include("polls.urls")),
-        path("blogs/", include("blogs.urls")),
-    ] + debug_toolbar_urls()
+from debug_toolbar.toolbar import debug_toolbar_urls
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("polls/", include("polls.urls")),
+    path("blogs/", include("blogs.urls")),
+] + debug_toolbar_urls()

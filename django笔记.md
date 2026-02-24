@@ -10,6 +10,38 @@
 3. 执行 app_name 下的测试用例：`uv run manage.py test app_name`
 4. 生成 app_name 的迁移脚本：`uv run manage.py makemigrations app_name`
 5. 执行迁移：`uv run manage.py migrate`
+6. 插入数据：
+    1. 插入与保存
+        ```python
+        from myapp.models import Blog  # 导入你的模型
+        from django.utils import timezone # 导入时间处理库
+
+        # 方法 A：直接实例化然后保存
+        # 创建一个对象实例（此时还没有写入数据库）
+        post = Blog(title="我的第一篇博客", content="这是内容...")
+
+        # 如果模型中有日期字段，手动赋值
+        post.pub_date = timezone.now()
+
+        # 执行 save() 方法，此时才会真正插入 SQL 数据库
+        post.save()
+
+        print(post.id) # 保存后，数据库会自动分配 ID
+        ```
+    2. User 数据创建
+        ```python
+        from django.contrib.auth.models import User
+
+        # 创建一个新用户
+        user = User.objects.create_user(username='zhangsan', password='123456')
+
+        # 创建一个超级用户（通常用命令行 createsuperuser，代码也可以）
+        user = User.objects.create_superuser(username='admin', password='admin', email='admin@example.com')
+
+        # 验证密码
+        from django.contrib.auth import authenticate
+        user = authenticate(username='zhangsan', password='wrong_password') # 如果密码错误返回 None
+        ```
 
 
 ### django.db.models
@@ -27,7 +59,17 @@
     4. 阻止删除（保护数据）     → PROTECT（不能删） / RESTRICT（要删一起删）。例：有商品的分类、有员工的部门
     5. 自定义逻辑               → SET(callable)。例：归档到特定用户、随机分配
     6. 数据库处理               → DO_NOTHING
-3. ManyToManyField 会自动创建中间表并处理索引，所以不需要手动为它创建索引
+3. ManyToManyField
+    1. ManyToManyField 会自动创建中间表并处理索引，所以不需要手动为它创建索引
+    2. ManyToManyField 不能直接在创建对象时赋值，会报错
+        ```Python
+        TypeError: Direct assignment to the forward side of a many-to-many set is prohibited. Use tag.set() instead.
+        ```
+        假设 model 名的一个实例为 `model_name`，ManyToManyField 字段名为 `mtm_field_name`，其中的一个实例为 `mtm_1`，那么对该字段赋值的方法为
+        ```python
+        model_name.mtm_field_name.set([mtm_1])
+        ```
+    
 4. 应当优先使用通用视图来实现需求：[基于类的视图](https://docs.djangoproject.com/zh-hans/6.0/topics/class-based-views/)、[内置类视图 API](https://docs.djangoproject.com/en/6.0/ref/class-based-views/)
 5. 常用字段类型
     1. 字符串类型
@@ -168,9 +210,10 @@ django 中有许多的固定的属性名，不能随便更改
         ```
 3. 如果单个用例调试时，不会在断点处停下来，那么：
     1. 很有可能是因为指定了 -cov 参数，在 `pyproject.toml` 下的 `[tool.pytest.ini_options]` 中的 `addopts` 移除与 cov 相关的选项即可。vscode 测试中的运行覆盖率测试功能会在运行时自动添加该选项。[VS Code Pytest/Unittest debugger doesn't stop on breakpoints](https://stackoverflow.com/questions/73760110)
+4. 所有需要与数据库交互的类与函数，都需要带上 `@pytest.mark.django_db` 装饰器
     
 #### FactoryBoy 生成数据
-1. 定义工厂
+1. 定义工厂（封装生成数据的类）
     ```python
     # factories.py
     import factory

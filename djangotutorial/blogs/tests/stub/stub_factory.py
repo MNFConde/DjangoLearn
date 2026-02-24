@@ -2,6 +2,7 @@ from blogs.models import (
     Article,
     Tag,
 )
+from blogs.tests.stub.stub_faker import SimpleFactoryFaker
 from django.contrib.auth.models import User
 import factory
 from factory.django import DjangoModelFactory

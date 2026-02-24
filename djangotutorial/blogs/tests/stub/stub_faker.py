@@ -64,3 +64,7 @@ class SimpleFactoryFaker:
         return LazyAttribute(
             lambda i: faker_method(**kwargs)
         )  # 这里不传 self 的原因：super().__getattr__(name) 返回的通常已经是一个绑定方法，对应的 self 已经绑定完毕
+
+
+# 在最后导入额外的 faker 函数
+import blogs.tests.stub.stub_extend_faker
