@@ -1,64 +1,7 @@
-from blogs import util
 from blogs.models import Article, Tag
 from django.shortcuts import render
-from django.http import HttpResponse
 from django.core.paginator import Paginator
-from datetime import datetime
-from random import randint
-
-test_data = {
-    "datetime": datetime.now(),
-    "tag_list": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-    "title": "title_test",
-    "excerpt": "123123123123123123123123123123",
-    "author": "123123",
-}
-
-test_tag_list = [
-    util.TagData("tag1", "link1"),
-    util.TagData("tag2", "link1"),
-    util.TagData("tag3", "link1"),
-    util.TagData("tag4", "link1"),
-    util.TagData("tag5", "link1"),
-]
-
-test_context = [
-    util.ArticleData(
-        datetime.now(),
-        test_tag_list[randint(0, 3) : randint(3, len(test_tag_list))],
-        "123123",
-        "123123123123132",
-        "123",
-    ),
-    util.ArticleData(
-        datetime.now(),
-        test_tag_list[randint(0, 3) : randint(3, len(test_tag_list))],
-        "123123",
-        "123123123123132",
-        "123",
-    ),
-    util.ArticleData(
-        datetime.now(),
-        test_tag_list[randint(0, 3) : randint(3, len(test_tag_list))],
-        "123123",
-        "123123123123132",
-        "123",
-    ),
-    util.ArticleData(
-        datetime.now(),
-        test_tag_list[randint(0, 3) : randint(3, len(test_tag_list))],
-        "123123",
-        "123123123123132",
-        "123",
-    ),
-    util.ArticleData(
-        datetime.now(),
-        test_tag_list[randint(0, 3) : randint(3, len(test_tag_list))],
-        "123123",
-        "123123123123132",
-        "123",
-    ),
-]
+from django.db.models import Count
 
 
 # Create your views here.
@@ -72,13 +15,17 @@ def index_page(request):
     page_number = request.GET.get("page", 1)
     page_obj = paginator.get_page(page_number)
 
+    # 1. 使用 annotate 创建一个名为 'article_count' 的临时字段
+    #    该字段统计每个 Tag 关联的 Article 数量（利用 related_name 'articles'）
+    # 2. 使用 order_by 对这个临时字段进行排序
+    #    加上 '-' 表示降序（从多到少），去掉 '-' 则是升序
+    tags = Tag.objects.annotate(article_count=Count("articles")).order_by(
+        "-article_count", "tag_name"
+    )
     context = {
-        "article_info_list": test_context,
-        "blogs_page_info": {
-            "page_obj": page_obj,
-            "paginator": paginator,
-        },
-        "tag_list": test_tag_list,
+        "page_obj": page_obj,
+        "paginator": paginator,
+        "tag_list": tags,
     }
 
     return render(request, "blogs/index.html", context)

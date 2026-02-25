@@ -21,3 +21,12 @@ def markdown_format(text):
             ],
         )
     )
+
+
+@register.filter(name="excerpt")
+def get_excerpt(text):
+    """
+    取正文前 n 个字符作为摘要
+    """
+
+    return text[:200] + "..."

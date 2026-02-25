@@ -45,6 +45,7 @@
 
 
 ### django.db.models
+#### models 下的常用字段
 1. db_index=True：为该字段自身创建索引（除去自动添加索引的情况），也可以使用 Meta 类下的 indexes
 2. Meta.indexes ：自定义索引，在对应的 Model 类下的 META 类中指定 indexes，可以设定单列索引也可以设置多列索引，比 db_index 更加灵活；每一个 indexes 列表中的元素都由 `models.Index` 生成， 参数如下：
     1. fields：必选，字段列表（遵循 `最左前缀原则` ：查询条件必须从复合索引的最左边字段开始，连续匹配，才能有效利用索引）
@@ -141,6 +142,30 @@
         | related_name | 反向关系名称 | related_name='related_name' |
         | on_delete | 删除时的行为 | on_delete=models.CASCADE |
 
+#### annotate、aggregate 与 聚合函数
+1. annotate 
+    1. 是一个计算属性，用来在查询 Model 时计算并添加某些不存在于 Model 本身的字段
+    2. 语法
+        ```python
+        # 语法结构
+        queryset = Model.objects.annotate(
+            新字段名=聚合函数('关联字段')
+        )
+        ```
+    3. 性能：数据量非常大是会影响性能
+2. aggregate
+    1. 是一个计算属性，用来统计整个查询集，返回一个字典
+    2. 语法
+        ```python
+        total_articles = Article.objects.aggregate(
+            结果字典键=聚合函数('关联字段')
+        )
+        ```
+3. 聚合函数，最常用的包括：
+    - Count: 计数（如：统计关联对象的数量）。
+    - Sum: 求和（如：统计订单总金额）。
+    - Avg: 求平均值（如：统计文章平均评分）。
+    - Max / Min: 最大值/最小值。
 
 ### django.core.paginator
 1. Paginator 分页器可以将查询数据按照指定的个数进行分组，如 `paginator = Paginator(article_list, 10)`

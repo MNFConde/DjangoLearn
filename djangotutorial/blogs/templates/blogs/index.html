@@ -1,37 +1,36 @@
 {% extends "blogs/base.html" %}
+{% load blogs_template_filter %}
 
 {% comment %} 
 需要传入的变量：
-    - article_info_list：
-        - datetime_info     ：日期时间信息
-        - tag_list          ：所有的 tag （前五个）
-            - name          : tag 名称
-            - link          : tag 链接
-        - title             ：文章标题
-        - excerpt           ：文章摘要（没有就从正文提取前100字）
-        - author            ：文章作者
-        - article_link      : 文章链接
-    - tag_list              : 当前所有 tag 的列表，按照文章个数排序
-        - name              ：tag 名
-        - link              ：链接
+    - page_obj:
+        - page_obj.object_list: Subscribe[Article]
+            - tag.all: Subscribe[Tag]
+                使用 all，Django 会识别这是一个函数并自动调用
+                - tag_name: str
+            - author
+                - username: str
+    - paginator:
+        - count: int        总页数
+        - num_page: int     当前页面页码
 {% endcomment %}
 {% block page_main %}
 <!-- 主内容区 -->
 <main class="container main-container">
     <!-- 文章列表 -->
     <section class="article-list">
-        {% for article_info in article_info_list %}
+        {% for article_info in page_obj.object_list %}
             <article class="article-card">
                 <div class="article-meta">
-                    <span class="date">{{ article_info.datetime_info }}</span>
-                    {% for tag in article_info.tag_list %}
-                        <a href="{{ tag.link }}" class="article_tag">{{ tag.name }}</a>
+                    <span class="date">{{ article_info.updated_time }}</span>
+                    {% for tag in article_info.tag.all %}
+                        <a href="#" class="article_tag">{{ tag.tag_name }}</a>
                     {% endfor %}
                 </div>
                 <h2 class="article-title">
-                    <a href="{{ article_info.article_link }}">{{ article_info.title }}</a>
+                    <a href="#">{{ article_info.title }}</a>
                 </h2>
-                <p class="article-excerpt">{{ article_info.excerpt }}</p>
+                <p class="article-excerpt">{{ article_info.content|excerpt }}</p>
             </article>
         {% endfor %}
     </section>
@@ -54,7 +53,7 @@
             <h3 class="widget-title">标签</h3>
             <div class="tag-cloud">
                 {% for tag in tag_list %}
-                <a href="{{ tag.link }}" class="tag">{{ tag.name }}</a>
+                <a href="{{ tag.link }}" class="tag">{{ tag.tag_name }}</a>
                 {% endfor %}
             </div>
         </div>
