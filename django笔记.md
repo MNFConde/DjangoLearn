@@ -210,6 +210,8 @@ django 中有许多的固定的属性名，不能随便更改
             ("时间信息", {"fields": ["pub_date"]}),
         ]
         ```
+### django 模板使用记录
+1. `{% url "url_name" var_name %}` 可以消除 url 的硬编码，如果 app 的 url.py 指定了 app_name，则需要在 url_name 之前加上 app_name: `{% url "app_name:url_name" var_name %}`；`var_name` 则是指定传入该 url 的变量，如`{% url "detail" var_name %}` `path("specifics/<int:question_id>/", views.detail, name="detail"),`，则传入的 `question_id == var_name`
 
 ### django 使用方法记录
 1. 在修改 css 后发现网页端未生效：可能是因为浏览器缓存的原因，使用 Ctrl+Shift+R 来硬刷新

@@ -24,11 +24,11 @@
                 <div class="article-meta">
                     <span class="date">{{ article_info.updated_time }}</span>
                     {% for tag in article_info.tag.all %}
-                        <a href="#" class="article_tag">{{ tag.tag_name }}</a>
+                        <a href="/tags/?tag={{ tag.tag_name }}" class="article_tag">{{ tag.tag_name }}</a>
                     {% endfor %}
                 </div>
                 <h2 class="article-title">
-                    <a href="#">{{ article_info.title }}</a>
+                    <a href="{% url 'blogs:article_page' article_info.id %}">{{ article_info.title }}</a>
                 </h2>
                 <p class="article-excerpt">{{ article_info.content|excerpt }}</p>
             </article>
@@ -53,10 +53,27 @@
             <h3 class="widget-title">标签</h3>
             <div class="tag-cloud">
                 {% for tag in tag_list %}
-                <a href="{{ tag.link }}" class="tag">{{ tag.tag_name }}</a>
+                <a href="/tags/?tag={{ tag.tag_name }}" class="tag">{{ tag.tag_name }}</a>
                 {% endfor %}
             </div>
         </div>
     </aside>
 </main>
+<!-- 分页 -->
+<!-- 分页导航 -->
+<nav class="pagination">
+    {% if page_obj.has_previous %}
+        <a href="?page=1" class="page-btn">首页</a>
+        <a href="?page={{ page_obj.previous_page_number }}" class="page-btn">上一页</a>
+    {% endif %}
+    
+    <span class="current-page">
+        第 {{ page_obj.number }} 页 / 共 {{ page_obj.paginator.num_pages }} 页
+    </span>
+    
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="page-btn">下一页</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}" class="page-btn">末页</a>
+    {% endif %}
+</nav>
 {% endblock page_main %}
