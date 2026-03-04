@@ -504,6 +504,10 @@ class TestUserModel:
 ## Python 相关
 ### import
 1. `from . import views` 与 `import views` 的搜索起点不同，前者从当前文件的目录开始，后者从项目根目录（和 `sys.path`、PYTHONPATH 等）开始搜索
+2. import 可以保证导入的部分被执行，在有些地方可以当作调整执行顺序的方法，**不过存在缓存机制只会执行一次**
+3. `from xxx import xxx` 的方式也会保证对应的文件被完整的执行过，**不过只会执行一次，之后会从缓存中读取对应的部分而不在完整执行**
+4. 强制重新执行，需要 `importlib.reload(xxx)`
+
 
 ### 装饰器
 #### 类装饰器

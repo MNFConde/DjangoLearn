@@ -1,9 +1,13 @@
-from blogs.tests.stub.stub_faker import SimpleFactoryFaker
 from blogs.tests.stub.stub_model import BaseTestModel
+from blogs.tests.stub.stub_faker import SimpleFactoryFaker
+
+# from blogs.util import Registry
 from django.db import models
 from factory.django import DjangoModelFactory
 import pytest
+from faker import Faker
 from datetime import datetime
+
 
 factory_faker = SimpleFactoryFaker()
 
