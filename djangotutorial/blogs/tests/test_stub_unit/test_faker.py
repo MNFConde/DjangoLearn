@@ -33,13 +33,13 @@ def test_factory_faker_default():
         class Meta:
             model = TestModel
 
-        basic_boolean = factory_faker.boolean
-        basic_inteage = factory_faker.random_int
-        name = factory_faker.name
-        e_mail = factory_faker.email
-        text = factory_faker.text
-        datetime = factory_faker.date_time
-        url = factory_faker.url
+        basic_boolean = factory_faker.boolean.lazy()
+        basic_inteage = factory_faker.random_int.lazy()
+        name = factory_faker.name.lazy()
+        e_mail = factory_faker.email.lazy()
+        text = factory_faker.text.lazy()
+        datetime = factory_faker.date_time.lazy()
+        url = factory_faker.url.lazy()
 
     a = TestFactory()
 
@@ -71,13 +71,13 @@ def test_factory_faker_extend():
         class Meta:
             model = TestModel
 
-        basic_boolean = factory_faker.boolean
-        basic_inteage = factory_faker.status_code
-        name = factory_faker.name
-        e_mail = factory_faker.email
-        text = factory_faker.text
-        datetime = factory_faker.date_time
-        url = factory_faker.url
+        basic_boolean = factory_faker.boolean.lazy()
+        basic_inteage = factory_faker.status_code.lazy()
+        name = factory_faker.name.lazy()
+        e_mail = factory_faker.email.lazy()
+        text = factory_faker.text.lazy()
+        datetime = factory_faker.date_time.lazy()
+        url = factory_faker.url.lazy()
 
     a = TestFactory()
 

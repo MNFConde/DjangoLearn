@@ -1,4 +1,4 @@
-from blogs.util import singleton_args, RegistryFactory
+from blogs.util import singleton_args, RegistryFactory, Registry
 from typing import Any, Callable, Union, Protocol, TypeVar, Generic
 from factory import LazyAttribute
 from faker import Faker
@@ -24,11 +24,17 @@ class FunctionWrapper(Generic[T]):
         # 实际调用函数的地方
         return self.func(*args, **kwargs)
 
-    def lazy(self, **kwargs):
-        return LazyAttribute(lambda i: self.func(**kwargs))
+    def lazy(self, *args, **kwargs):
+        return LazyAttribute(lambda i: self.func(*args, **kwargs))
 
 
-SimpleFactoryFaker = RegistryFactory(Faker)
+class FakerRegistry(Registry):
+    def return_registry_val(self, val: Callable[..., Any]):
+        return FunctionWrapper(val)
+
+
+SimpleFactoryFaker = RegistryFactory(FakerRegistry, Faker)
+
 
 # @singleton_args
 # class SimpleFactoryFaker:
