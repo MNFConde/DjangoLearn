@@ -63,9 +63,9 @@ def test_factory_faker_default():
 @pytest.mark.django_db
 def test_factory_faker_extend():
     @factory_faker("status_code")
-    def status_code(self):
+    def status_code():
         """自定义 HTTP 状态码"""
-        return self.faker.random_element([200, 201, 400, 401, 404, 500])
+        return factory_faker.random_element([200, 201, 400, 401, 404, 500])
 
     class TestFactory(DjangoModelFactory):
         class Meta:
@@ -82,3 +82,5 @@ def test_factory_faker_extend():
     a = TestFactory()
 
     assert a.basic_inteage in [200, 201, 400, 401, 404, 500]
+
+    factory_faker.status_code() in [200, 201, 400, 401, 404, 500]
