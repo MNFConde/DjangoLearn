@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Type, TypeVar, Callable, Union
+from typing import Any, Type, TypeVar, Callable, Union, cast
 import inspect
 from abc import ABC, abstractmethod
 
@@ -30,7 +30,7 @@ def singleton_args(cls: Type[T]) -> Type[T]:
     """
 
     class Wrapper(cls):  # 继承原始类
-        instances: dict[tuple, Any] = {}
+        instances: dict[str, Any] = {}
 
         def __new__(cls, *args: Any, **kwargs: Any) -> Any:
             # 生成缓存键（注意参数顺序）
@@ -59,7 +59,7 @@ def singleton_args(cls: Type[T]) -> Type[T]:
     if hasattr(cls, "__annotations__"):
         Wrapper.__annotations__ = cls.__annotations__
 
-    return Wrapper
+    return cast(Type[T], Wrapper)
 
 
 class Registry(ABC):
@@ -101,9 +101,9 @@ class Registry(ABC):
         registry_keys = list(Registry.registry_cls_dict.keys())
         parent_attrs = dir(self.parent_instance) if self.parent_instance else []
         # 合并去重
-        return sorted(set(base_attrs + registry_keys + parent_attrs))
+        return sorted(set(list(base_attrs) + registry_keys + parent_attrs))
 
-    def __getattr__(self, name: str, **kwargs) -> Callable[..., Any]:
+    def __getattr__(self, name: str, **kwargs) -> Any:
         """
         为了兼容 hasatttr
         """
@@ -112,21 +112,25 @@ class Registry(ABC):
         return self.return_registry_val(getattr(self.parent_instance, name))
 
     @abstractmethod
-    def return_registry_val(self, val: Any): ...
+    def return_registry_val(self, val: Any) -> Any: ...
 
 
 class RegistrySimple(Registry):
-    def return_registry_val(self, val: Any):
+    def return_registry_val(self, val: Type[T]) -> Type[T]:
         return val
 
 
+T_registry = TypeVar("T_registry", bound=Registry)
+
+
 def RegistryFactory(
-    registry_class: type = RegistrySimple, parent_class: Union[None, type] = None
-):
+    registry_class: Type[T_registry] = RegistrySimple,
+    parent_class: Union[None, type] = None,
+) -> Type[T_registry]:
     @singleton_args
     class Warpper(registry_class):
         if parent_class:
             _parent_class = parent_class
         pass
 
-    return Warpper
+    return cast(Type[T_registry], Warpper)

@@ -5,7 +5,6 @@ from blogs.tests.stub.stub_faker import SimpleFactoryFaker
 from django.db import models
 from factory.django import DjangoModelFactory
 import pytest
-from faker import Faker
 from datetime import datetime
 
 
@@ -30,7 +29,7 @@ class TestModel(BaseTestModel):
 @pytest.mark.django_db
 def test_factory_faker_default():
     class TestFactory(DjangoModelFactory):
-        class Meta:
+        class Meta(DjangoModelFactory.Meta):
             model = TestModel
 
         basic_boolean = factory_faker.boolean.lazy()
@@ -68,7 +67,7 @@ def test_factory_faker_extend():
         return factory_faker.random_element([200, 201, 400, 401, 404, 500])
 
     class TestFactory(DjangoModelFactory):
-        class Meta:
+        class Meta(DjangoModelFactory.Meta):
             model = TestModel
 
         basic_boolean = factory_faker.boolean.lazy()

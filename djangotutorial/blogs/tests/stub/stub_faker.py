@@ -1,6 +1,6 @@
-from blogs.util import singleton_args, RegistryFactory, Registry
-from typing import Any, Callable, Union, Protocol, TypeVar, Generic
-from factory import LazyAttribute
+from blogs.util import RegistryFactory, Registry
+from typing import Any, Callable, Protocol, TypeVar, Generic
+from factory.declarations import LazyAttribute
 from faker import Faker
 import functools
 

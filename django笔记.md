@@ -429,7 +429,7 @@ django 中有许多的固定的属性名，不能随便更改
     1. 特性（Traits）：定义一组命名的属性组合，指定该组合为 true，就能将实例的参数修改为指定的组合
         ```python
         class UserFactory(factory.django.DjangoModelFactory):
-            class Meta:
+            class Meta(DjangoModelFactory.Meta):
                 model = User
 
             username = factory.Faker("user_name")
@@ -444,6 +444,7 @@ django 中有许多的固定的属性名，不能随便更改
         admin_user = UserFactory(admin=True)          # 创建管理员用户
         inactive_user = UserFactory(inactive=True)    # 创建非活跃用户
         ```
+        这里 Meta 继承 DjangoModelFactory.Meta 的写法是为了解决静态类型检查
     2. 后生成钩子（Post-generation hooks）：在对象创建后执行自定义逻辑，如处理多对多关系或触发副作用
         ```python
         class ProductFactory(factory.django.DjangoModelFactory):
@@ -529,7 +530,13 @@ class TestUserModel:
     3. 装饰器所做的所有额外操作对于被装饰的函数本身都是副作用，这些副作用都不应该影响函数本身的行为，所以返回原函数是最合适的
 
 ### 静态提示
-#### 
+#### typing
+1. TypeVar： 希望函数的输入类型和输出类型之间存在某种关联
+    1. bound 约束：设置一个类型声明 T ，其为指定类型 A 或 A 的子类 `T = TypeVar('T', bound=A)`
+    2. 限定为指定的几种类型：`T = TypeVar('T', int, str, bytes)`
+
+### 动态注册
+静态分析工具（Pylance、mypy）在分析代码时不会执行代码，而是基于抽象语法树（AST）和类型注解推断类型，自定义动态装饰类，静态提示工具不会模拟该行为。因此，现阶段类型提示工具基本上无法很好的识别动态注册的字段与方法
 
 ### 杂项
 1. lambda 中无法调用 `super()` 因为 `super()` 需要访问类的上下文
