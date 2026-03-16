@@ -39,14 +39,16 @@
             - curr_page         : 当前页
     {% endcomment %}
     <!-- 主内容区 -->
-    {% block page_main %}
-    {% endblock page_main %}
+    <main class="main-wrapper">
+        {% block page_main %}
+        {% endblock page_main %}
+    </main>
     <!-- 页脚 -->
-    <footer class="footer">
+    {% comment %} <footer class="footer">
         <div class="container">
             <p>&copy; 2026 张三 的探索小记，使用 Django 构建.</p>
         </div>
-    </footer>
+    </footer> {% endcomment %}
     
 </body>
 </html>

@@ -18,6 +18,8 @@ def markdown_format(text):
                 "markdown.extensions.extra",
                 "markdown.extensions.codehilite",
                 "markdown.extensions.toc",
+                "nl2br",
+                "fenced_code",
             ],
         )
     )
