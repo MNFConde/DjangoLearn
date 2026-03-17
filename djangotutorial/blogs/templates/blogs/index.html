@@ -24,7 +24,7 @@
                 <div class="article-meta">
                     <span class="date">{{ article_info.updated_time }}</span>
                     {% for tag in article_info.tag.all %}
-                        <a href="/tags/?tag={{ tag.tag_name }}" class="article_tag">{{ tag.tag_name }}</a>
+                        <a href="{% url 'blogs:tag_index' %}?tag={{ tag.tag_name }}" class="article_tag">{{ tag.tag_name }}</a>
                     {% endfor %}
                 </div>
                 <h2 class="article-title">
@@ -53,7 +53,7 @@
             <h3 class="widget-title">标签</h3>
             <div class="tag-cloud">
                 {% for tag in tag_list %}
-                <a href="/tags/?tag={{ tag.tag_name }}" class="tag">{{ tag.tag_name }}</a>
+                <a href="{% url 'blogs:tag_index' %}?tag={{ tag.tag_name }}" class="tag">{{ tag.tag_name }}</a>
                 {% endfor %}
             </div>
         </div>

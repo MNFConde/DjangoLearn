@@ -70,6 +70,7 @@
         ```python
         model_name.mtm_field_name.set([mtm_1])
         ```
+    3. ManyToManyField 本质是一张记录了类似键值对的中间表，其中 obj1 包含的 val1, val2, val3 在该表中会存在 3 条记录，所以查询时通过外键查询而不是 contains 查询
     
 4. 应当优先使用通用视图来实现需求：[基于类的视图](https://docs.djangoproject.com/zh-hans/6.0/topics/class-based-views/)、[内置类视图 API](https://docs.djangoproject.com/en/6.0/ref/class-based-views/)
 5. 常用字段类型
@@ -196,6 +197,19 @@
 2. objects：每个模型（Django 数据库类）中默认存在的 Manager，通过它可以对数据库进行操作
     1. all()：`SampleClass.objects.all()` 会返回所有在 `SampleClass` 数据表中的数据，通过修改 `SampleClass` 中的 `get_queryset` 方法可以自定义该方法的行为
     2. filter()：`SampleClass.objects.filter(condition)` 会返回所有在 `SampleClass` 数据表中满足 condition 的数据
+        1. 精确匹配：`SampleClass.objects.filter(element_name=val)`
+        2. 模糊匹配：
+            1. 区分大小写：`SampleClass.objects.filter(element_name__contains=val)` `这个方法也可以用来查询某个记录中的列表属性中，是否包含某个指定的值：__contains=[val]`
+            2. 不区分大小写：`SampleClass.objects.filter(element_name__icontains=val)`
+        3. 范围查询（通常日期或数字）：`SampleClass.objects.filter(element_name__range=(start, end))`
+        4. 比较 gt (大于), gte (大于等于), lt (小于), lte (小于等于)：`SampleClass.objects.filter(element_name__gt=val)`
+        5. 在给定的列表/元组中：`SampleClass.objects.filter(element_name__in=[val1, val2, val3, ...])`
+        6. 判断是否为空 (True-为空，False-不为空) ：`SampleClass.objects.filter(element_name__isnull=True)`
+        7. 日期特化：`__year`, `__month`，`__day` 如：`SampleClass.objects.filter(element_name__year=2023))`
+        8. 组合：
+            1. 传入多个为 AND：`SampleClass.objects.filter(element1=val1, element2=val2)`
+            1. 使用 `|` 为 OR：`SampleClass.objects.filter(element1=val | element2=val2)`
+        9. 外键：双下划线跨表查询 `SampleClass.objects.filter(element1__foreignkey=val)`
 
 ### django 属性名
 django 中有许多的固定的属性名，不能随便更改
