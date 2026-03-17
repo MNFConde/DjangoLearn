@@ -16,7 +16,7 @@
 {% endcomment %}
 {% block page_main %}
 <!-- 主内容区 -->
-<main class="container main-container">
+<main class="container main-container main-wrapper">
     <!-- 文章列表 -->
     <section class="article-list">
         {% for article_info in page_obj.object_list %}
@@ -61,7 +61,7 @@
 </main>
 <!-- 分页 -->
 <!-- 分页导航 -->
-<nav class="pagination">
+<nav class="pagination footer">
     {% if page_obj.has_previous %}
         <a href="?page=1" class="page-btn">首页</a>
         <a href="?page={{ page_obj.previous_page_number }}" class="page-btn">上一页</a>

@@ -124,6 +124,7 @@ ul {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    margin-top: 2rem;
 }
 
 .article-card {
@@ -229,6 +230,7 @@ ul {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    margin-top: 2rem;
 }
 
 .widget {
@@ -362,8 +364,8 @@ ul {
 
 /* 页脚 */
 .footer {
-    background-color: var(--text-primary);
-    color: white;
+    /* background-color: var(--text-primary); */
+    color: black;
     text-align: center;
     padding: 2rem 0;
     margin-top: 2rem;
@@ -482,7 +484,7 @@ header nav a:hover {
 
 footer {
   text-align: center;
-  color: #64748b;
+  /* color: #64748b; */
   border-top: 1px solid #e2e8f0;
   padding-top: 2rem;
   font-size: 0.9rem;
@@ -706,7 +708,7 @@ body {
 .footer {
     flex-shrink: 0;  /* 关键：防止页脚被压缩 */
     /* background-color: var(--text-primary); */
-    color: white;
+    color: black;
     /* text-align: center; */
     /* padding: 2rem 0; */
     /* 移除原来的 margin-top: 2rem，避免多余间距 */

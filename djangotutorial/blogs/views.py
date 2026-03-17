@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.core.paginator import Paginator
 from django.db.models import Count
 
-per_page = 4
+per_page = 3
 
 
 # Create your views here.
