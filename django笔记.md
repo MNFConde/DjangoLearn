@@ -514,7 +514,26 @@ class TestUserModel:
         def evaluate(self, instance, step, context):
             return self.function(instance)  # 总是传入 instance 参数
     ```
-    因此，如果传入参数需要一个
+    instance 是当前正在构建的对象（使用 LazyAttribute 的那个类的实例）
+    无论传给 LazyAttribute 的是什么函数，Django 执行时都会自动把 instance 作为第一个参数塞进去，所以传入无参函数时，需要使用匿名函数作为中间层中转
+    如果传入的是有参函数（不是专门设计为了接受 instance 的），则也需要匿名函数来进行中转：
+    ```python
+    email = factory.LazyAttribute(lambda i: create_custom_email(i, domain="google.com"))
+    ```
+    上述通过 `domain="google.com"` 进行传参
+2. LazyAttribute instance 获取其它的 LazyAttribute 属性
+    简而言之，在访问使用了 LazyAttribute 的属性时，实际访问的是一个 `StubObject` 实例，在访问它时会自动运算，所以能否访问与其定义的顺序也无关；但是不能出现循环依赖的问题
+
+
+### django 知识
+#### MTV 链路
+Django 的设计模式被称为 MTV（Model-Template-View），它本质上与常见的 MVC（Model-View-Controller）非常相似，只是命名习惯不同。
+
+理解 MTV 链路，就是理解用户发起一个请求到看到页面的全过程：
+
+- M (Model 模型层)：负责数据存取。对应数据库中的表结构。你在这里定义字段（如标题、内容、时间），Django 负责把它翻译成 SQL 语句与数据库交互。
+- V (View 视图层)：负责业务逻辑。它接收用户的请求，从 Model 层取出数据，或者将用户提交的数据保存到 Model 层，然后决定把哪个页面（Template）返回给用户。
+- T (Template 模板层)：负责页面展示。这是 HTML 文件，其中包含特殊的语法（如 {{ 变量 }}），用来展示 View 传过来的数据。
 
 ## Python 相关
 ### import

@@ -266,6 +266,7 @@ dependencies = [
     { name = "django", version = "5.2.10", source = { registry = "https://mirrors.aliyun.com/pypi/simple/" }, marker = "python_full_version < '3.12'" },
     { name = "django", version = "6.0.1", source = { registry = "https://mirrors.aliyun.com/pypi/simple/" }, marker = "python_full_version >= '3.12'" },
     { name = "django-debug-toolbar" },
+    { name = "djangorestframework" },
     { name = "markdown" },
     { name = "requests" },
 ]
@@ -283,6 +284,7 @@ dev = [
 requires-dist = [
     { name = "django", specifier = ">=5.2.10" },
     { name = "django-debug-toolbar", specifier = ">=6.2.0" },
+    { name = "djangorestframework", specifier = ">=3.17.0" },
     { name = "markdown", specifier = ">=3.10.2" },
     { name = "requests", specifier = ">=2.32.5" },
 ]
@@ -294,6 +296,19 @@ dev = [
     { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "pytest-django", specifier = ">=4.12.0" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
+]
+
+[[package]]
+name = "djangorestframework"
+version = "3.17.0"
+source = { registry = "https://mirrors.aliyun.com/pypi/simple/" }
+dependencies = [
+    { name = "django", version = "5.2.10", source = { registry = "https://mirrors.aliyun.com/pypi/simple/" }, marker = "python_full_version < '3.12'" },
+    { name = "django", version = "6.0.1", source = { registry = "https://mirrors.aliyun.com/pypi/simple/" }, marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://mirrors.aliyun.com/pypi/packages/b1/46/615ad5425c7b941e6fd3f382d25b1aca680022200d8e5b87bfc665c4425d/djangorestframework-3.17.0.tar.gz", hash = "sha256:456fd992a33f9e64c9d0f47e85d9787db0efb44f894c1e513315b5e74765bd4c" }
+wheels = [
+    { url = "https://mirrors.aliyun.com/pypi/packages/5f/ee/01dfe0e712d37007a4417bf7ba518a9e6830d4de009ed4bfdfebd45b99cf/djangorestframework-3.17.0-py3-none-any.whl", hash = "sha256:d84fe85f30b7ac6e8c0076ce9ff635e4eaedca5912f8d7d2926ce448c08533ba" },
 ]
 
 [[package]]
