@@ -35,6 +35,7 @@
                 "-v",
                 "--no-cov"
             ],
+            "django": true,
             "justMyCode": false
         },
         {

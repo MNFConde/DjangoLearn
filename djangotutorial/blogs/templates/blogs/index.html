@@ -1,0 +1,79 @@
+{% extends "blogs/base.html" %}
+{% load blogs_template_filter %}
+
+{% comment %} 
+需要传入的变量：
+    - page_obj:
+        - page_obj.object_list: Subscribe[Article]
+            - tag.all: Subscribe[Tag]
+                使用 all，Django 会识别这是一个函数并自动调用
+                - tag_name: str
+            - author
+                - username: str
+    - paginator:
+        - count: int        总页数
+        - num_page: int     当前页面页码
+{% endcomment %}
+{% block page_main %}
+<!-- 主内容区 -->
+<main class="container main-container main-wrapper">
+    <!-- 文章列表 -->
+    <section class="article-list">
+        {% for article_info in page_obj.object_list %}
+            <article class="article-card">
+                <div class="article-meta">
+                    <span class="date">{{ article_info.updated_time }}</span>
+                    {% for tag in article_info.tag.all %}
+                        <a href="{% url 'blogs:tag_index' %}?tag={{ tag.tag_name }}" class="article_tag">{{ tag.tag_name }}</a>
+                    {% endfor %}
+                </div>
+                <h2 class="article-title">
+                    <a href="{% url 'blogs:article_page' article_info.id %}">{{ article_info.title }}</a>
+                </h2>
+                <p class="article-excerpt">{{ article_info.content|excerpt }}</p>
+            </article>
+        {% endfor %}
+    </section>
+
+    <!-- 侧边栏 -->
+    <aside class="sidebar">
+        <!-- 个人简介 -->
+        <div class="widget profile">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="头像" class="avatar">
+            <h3>张三</h3>
+            <p>全栈开发者，热爱开源和技术分享。专注于 Python、Django 和前端技术。</p>
+            <div class="social-links">
+                <a href="#">GitHub</a>
+                <a href="#">邮箱</a>
+            </div>
+        </div>
+
+        <!-- 标签云 -->
+        <div class="widget">
+            <h3 class="widget-title">标签</h3>
+            <div class="tag-cloud">
+                {% for tag in tag_list %}
+                <a href="{% url 'blogs:tag_index' %}?tag={{ tag.tag_name }}" class="tag">{{ tag.tag_name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    </aside>
+</main>
+<!-- 分页 -->
+<!-- 分页导航 -->
+<nav class="pagination footer">
+    {% if page_obj.has_previous %}
+        <a href="?page=1" class="page-btn">首页</a>
+        <a href="?page={{ page_obj.previous_page_number }}" class="page-btn">上一页</a>
+    {% endif %}
+    
+    <span class="current-page">
+        第 {{ page_obj.number }} 页 / 共 {{ page_obj.paginator.num_pages }} 页
+    </span>
+    
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="page-btn">下一页</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}" class="page-btn">末页</a>
+    {% endif %}
+</nav>
+{% endblock page_main %}

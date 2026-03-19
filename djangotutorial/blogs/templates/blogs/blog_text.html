@@ -1,0 +1,13 @@
+{% extends "blogs/base.html" %}
+{% load blogs_template_filter %}
+
+{% block static_file %}
+<link rel="stylesheet" href="../../static/blogs/blogs_style.css">
+{% endblock %}
+
+{% block page_main %}
+<div class="post-content">
+    <!-- article.body 是包含 Markdown 文本的字段 -->
+    {{ article_info.content|markdown }}
+</div>
+{% endblock %}
