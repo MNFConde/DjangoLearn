@@ -535,6 +535,36 @@ Django 的设计模式被称为 MTV（Model-Template-View），它本质上与�
 - V (View 视图层)：负责业务逻辑。它接收用户的请求，从 Model 层取出数据，或者将用户提交的数据保存到 Model 层，然后决定把哪个页面（Template）返回给用户。
 - T (Template 模板层)：负责页面展示。这是 HTML 文件，其中包含特殊的语法（如 {{ 变量 }}），用来展示 View 传过来的数据。
 
+## Django REST Framework(DRF)
+### 序列化类
+#### 什么是序列化类
+将数据库的记录转为可供网络传输的格式，如 json yaml等
+#### 序列化类基本功能
+序列化：将数据库记录转为网络传输格式
+``` python
+user = User(username='alex', email='alex@example.com')
+serializer = UserSerializer(user)
+# 翻译结果：
+# {'username': 'alex', 'email': 'alex@example.com'} 
+# 框架会自动把它转成 JSON 字符串发给前端
+```
+反序列化：将网络传输格式转为 Python 可以识别的内容
+```python
+data = {'username': 'newbie', 'email': 'newbie@test.com'}
+serializer = UserSerializer(data=data)
+if serializer.is_valid():
+    # 翻译结果：变成可以保存的 User 对象
+    user = serializer.save()
+```
+#### 其它功能
+1. 数据验证：指定字段会做检查，如邮箱字段，传入的数据并非邮箱格式则会报错
+2. 定义输出结构，不定义的字段不会输出
+
+### "超链接是好的 RESTful 设计"
+1. 对客户端解耦，不需要客户端依赖特定的拼接规则
+2. HATEOAS 原则(Hypermedia as the Engine of Application State - 超媒体作为应用状态引擎) 指明服务器应该告诉客户端下一步该做什么而不是客户端去猜下一步该做什么
+3. 可读性高
+
 ## Python 相关
 ### import
 1. `from . import views` 与 `import views` 的搜索起点不同，前者从当前文件的目录开始，后者从项目根目录（和 `sys.path`、PYTHONPATH 等）开始搜索
