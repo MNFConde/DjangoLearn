@@ -557,8 +557,153 @@ if serializer.is_valid():
     user = serializer.save()
 ```
 #### 其它功能
-1. 数据验证：指定字段会做检查，如邮箱字段，传入的数据并非邮箱格式则会报错
+1. 数据验证：指定字段会做检查，如邮箱字段，传入的数据并非邮箱格式则会报错。在定义字段类型时，就有隐含的验证规则，并且也可以通过参数显式指定规则，以及自定义规则（顺序为 字段类型验证（隐式） -> 字段参数验证（显式） -> 自定义验证方法（单字段验证） -> 全局验证方法（多字段）
+    1. 隐式验证规则：指定的 Field 类型
+    2. 显式验证规则：
+        ```python
+        title = serializers.CharField(required=False, allow_blank=True, max_length=100)
+        ```
+        - required=False: 定义了该字段不是必填的。如果请求数据中没有 title，验证通过。
+        - allow_blank=True: 定义了该字段允许为空字符串 ""。
+        - max_length=100: 定义了字符串长度不能超过 100。如果传入 101 个字符，验证会报错。
+    3. 自定义规则：
+        1. 单字段验证规则：结构如下
+            1. 方法名必须是 validate_<字段名>
+            2. value 参数会传入 对应字段的值
+            3. 验证失败，抛出 serializers.ValidationError
+            4. 验证成功，返回该值
+            ```python
+            # 方法名必须是 validate_<字段名>
+            def validate_title(self, value):
+                """
+                这个方法自动绑定到 'title' 字段
+                :param value: 客户端传来的 title 字段的值
+                """
+                if '敏感词' in value:
+                    # 如果验证失败，必须抛出 serializers.ValidationError
+                    raise serializers.ValidationError("标题中不能包含敏感词！")
+                
+                # 如果验证通过，必须返回处理后的值（或者原值）
+                return value
+            ```
+        2. 多字段联合验证
+            1. 方法名固定为 validate，在单字段验证结束后，DRF 会自动查找该方法并调用
+            2. 入参：传入 包含所有已验证字段的字典
+            3. 验证失败，抛出 serializers.ValidationError
+            4. 验证成功，返回完整的字段字典
+            ```python
+            # 方法名固定为 validate
+            def validate(self, attrs):
+                """
+                这个方法针对整个对象（所有字段）进行验证
+                :param attrs: 包含所有已验证字段的字典
+                """
+                # 假设业务规则：如果是 python 语言，样式不能是 'monokai'
+                if attrs['language'] == 'python' and attrs['style'] == 'monokai':
+                    raise serializers.ValidationError("Python 代码不支持使用 monokai 样式。")
+                
+                # 验证通过，返回完整的属性字典
+                return attrs
+            ```
 2. 定义输出结构，不定义的字段不会输出
+3. API 可视化：通过定义 `style` 的字典来定义前端渲染的样式
+    1. 控制输入框类型 (base_template)
+        这是最常用的用途，用于决定在 HTML 表单中使用哪种 HTML 标签来渲染字段。
+        - 'base_template': 'textarea.html'
+
+            渲染结果：<textarea ...></textarea>
+            适用场景：多行文本，比如代码块、长文章内容。
+            示例：code = serializers.CharField(style={'base_template': 'textarea.html'})
+        
+        - 'base_template': 'input.html' (默认值)
+
+            渲染结果：<input type="text" ...>
+            适用场景：普通的单行文本（这是默认行为，通常不需要显式写出）。
+        
+        - 'base_template': 'checkbox.html'
+
+            渲染结果：<input type="checkbox" ...>
+            适用场景：虽然 BooleanField 默认就会渲染为复选框，但如果你想强制某些字段显示为复选框，可以尝试这个（极少手动使用，因为字段类型通常决定了这个）。
+        
+        - 'base_template': 'select.html'
+
+            渲染结果：<select ...>...</select> (下拉菜单)
+            适用场景：ChoiceField 默认就是用这个模板。
+    2. 控制占位符 (input_type 和 placeholder)
+        这些选项用于给 HTML 输入框添加原生属性，提升用户交互体验。
+
+        - 'placeholder': '提示文本'
+
+            作用：设置输入框的占位符文本（输入框为空时显示的灰色提示文字）。
+            HTML 效果：<input type="text" placeholder="请输入用户名" ...>
+
+        - 'input_type': 'password'
+        
+            HTML 效果：<input type="password" ...>
+            注意：虽然这改变了浏览器显示方式，但不会改变 JSON 数据的传输方式（数据依然是明文传输，除非你配置了 HTTPS）。
+            
+        - 'input_type': 'email'
+
+            作用：在移动端键盘上会优化显示（例如显示 @ 符号键），并在现代浏览器中提供基础的邮箱格式检查。
+    3. 进阶：自定义模板类 (template_pack)
+
+        - 'template_pack': 'rest_framework/vertical'
+            作用：DRF 默认使用水平排列的表单（标签在左，输入框在右）。使用 vertical 可以让标签显示在输入框上方。
+            示例：
+            ```python
+
+
+            # 让这个序列化器渲染的所有字段都变成垂直排列
+            class MySerializer(serializers.Serializer):
+                name = serializers.CharField()
+                # ...
+                class Meta:
+                    style = {'template_pack': 'rest_framework/vertical'}
+            ```
+
+#### 使用与机制
+1. 创建新资源（网络发来的新数据）
+    ```python
+    # 前端发来的 JSON 数据
+    json_data = {'title': '新代码片段', 'code': 'print("hello")', 'language': 'python'}
+
+    # 1. 实例化序列化器，只传了 data，没有传 instance
+    serializer = SnippetSerializer(data=json_data)
+
+    # 2. 验证数据
+    if serializer.is_valid():
+        # 3. 调用 save() -> DRF 内部会自动调用 create() 方法
+    ```
+    这种方式使用序列化器来进行数据验证，通常情况下调用逻辑如下
+    > save() -> 检测到没有 instance -> 调用 create() -> Snippet.objects.create(...) -> 数据库 INSERT 操作
+    没有传入 instance，不会调用 `update()` 方法
+    
+2. 通过发送数据更新现有资源
+    ```python
+    # 1. 先从数据库获取到要修改的对象
+    snippet_to_update = Snippet.objects.get(id=1)
+
+    # 前端发来的修改数据
+    json_data = {'title': '修改后的标题'}
+
+    # 2. 实例化序列化器，同时传入 instance 和 data
+    serializer = SnippetSerializer(instance=snippet_to_update, data=json_data)
+
+    # 3. 验证数据
+    if serializer.is_valid():
+        # 4. 调用 save() -> DRF 内部会自动调用 update() 方法
+        updated_snippet = serializer.save()
+        # 此时 updated_snippet 是更新后的对象
+    ```
+    > save() -> 检测到传入了 instance -> 调用 update() -> 更新字段值 -> instance.save() -> 数据库 UPDATE 操作
+    
+    该场景可以额外指定 `partial=True` 来使得只传入需要修改的数据
+    ```python
+    # partial=True 允许部分更新，即 JSON 中只包含要修改的字段，其他字段不需要传
+    serializer = SnippetSerializer(instance=snippet, data=json_data, partial=True)
+
+    ```
+
 
 ### "超链接是好的 RESTful 设计"
 1. 对客户端解耦，不需要客户端依赖特定的拼接规则
