@@ -536,7 +536,7 @@ Django 的设计模式被称为 MTV（Model-Template-View），它本质上与�
 - T (Template 模板层)：负责页面展示。这是 HTML 文件，其中包含特殊的语法（如 {{ 变量 }}），用来展示 View 传过来的数据。
 
 ## Django REST Framework(DRF)
-### 序列化类
+### 序列化类 Serializer
 #### 什么是序列化类
 将数据库的记录转为可供网络传输的格式，如 json yaml等
 #### 序列化类基本功能
@@ -703,7 +703,79 @@ if serializer.is_valid():
     serializer = SnippetSerializer(instance=snippet, data=json_data, partial=True)
 
     ```
+### 模型序列化类 ModelSerializer
+该类型会自动检查对应的 Django Model 来自动生成序列化器字段
+#### 映射关系
+##### 字段类型映射
+    ModelSerializer 的 DRF 序列化字段类型 与 Django 的字段类型存在一一映射，自动为字段创建对应的 DRF 字段类型
+##### 验证规则的继承
+DRF 还会自动将 Model 字段中定义的约束条件应用到序列化器字段上
+- max_length 和 min_length:
+    如果 Model 的 CharField 定义了 max_length，DRF 的 CharField 会自动继承这个属性。这对于 EmailField、SlugField 等也适用。
+- required:
+    - 如果 Model 字段设置了 blank=True，DRF 字段会设置 required=False。
+    - 如果 Model 字段设置了 blank=False（默认），DRF 字段会设置 required=True。
+    - 例外：对于具有 default 值的字段，或者 AutoField（自增主键），DRF 通常会将其设为 required=False，因为在创建对象时这些字段可以由系统自动填充。
+- read_only:
+    - 默认情况下，主键 (AutoField) 会被标记为 read_only=True，因为通常不需要在创建或更新时手动指定 ID。
+    - 如果 Model 字段设置了 editable=False，该字段在序列化器中会被标记为 read_only=True。
+- allow_null:
+    如果 Model 字段设置了 null=True，DRF 字段会设置 allow_null=True。
+- choices:
+    如果 Model 字段定义了 choices 选项，DRF 会将 choices 传递给序列化器字段，并且通常会将其渲染为下拉菜单（在 HTML 表单中）或验证输入值是否在 choices 范围内。
+- help_text:
+    Model 字段中的 help_text 会被复制到序列化器字段的 help_text 属性中，用于生成 API 文档（如 Swagger）。
+- label:
+    Model 字段中的 verbose_name 会被复制到序列化器字段的 label 属性中。
 
+##### 特殊字段的处理（关系字段）
+对于关联字段，如 ForeignKey 和 ManyToManyField，ModelSerializer 默认使用主键进行序列化。
+
+ForeignKey: 默认映射为 PrimaryKeyRelatedField。
+ManyToManyField: 默认映射为 ManyRelatedField，其子字段通常是 PrimaryKeyRelatedField。
+这意味着默认情况下，关联对象在 API 中表现为其 ID 的列表或单个 ID。
+
+##### 自定义和覆盖
+可以在 ModelSerializer 中显式声明字段来覆盖默认行为。显式声明的字段优先级高于自动生成的字段。
+
+比如多字段联合验证，既可以通过重写 validate() 方法来实现（同 Serializer），也可以通过 validators 来实现
+
+validators：复用同一个验证逻辑，或者验证逻辑与序列化类分离
+定义验证类，然后添加到 validators 列表中
+
+```python
+from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
+from .models import Appointment
+
+# 自定义验证器类
+class TitleContentValidator:
+    def __call__(self, attrs):
+        # 注意：这里的 attrs 是包含所有字段数据的字典
+        title = attrs.get('title', '')
+        start_time = attrs.get('start_time')
+        
+        if '紧急' in title and start_time:
+            # 假设业务逻辑：如果是紧急任务，不能预约在明天之后
+            from django.utils import timezone
+            import datetime
+            if start_time > timezone.now() + datetime.timedelta(days=1):
+                raise serializers.ValidationError("标记为'紧急'的任务只能预约在明天之前。")
+        
+        return attrs
+
+class AppointmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Appointment
+        fields = '__all__'
+        
+        # 将自定义验证器添加到这里
+        validators = [
+            TitleContentValidator(),
+            # DRF 内置的验证器，例如联合唯一
+            # UniqueTogetherValidator(queryset=Appointment.objects.all(), fields=['user', 'start_time'])
+        ]
+```
 
 ### "超链接是好的 RESTful 设计"
 1. 对客户端解耦，不需要客户端依赖特定的拼接规则
