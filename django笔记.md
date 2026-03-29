@@ -703,6 +703,72 @@ if serializer.is_valid():
     serializer = SnippetSerializer(instance=snippet, data=json_data, partial=True)
 
     ```
+### 包装 API 视图
+REST框架提供了两个可用于编写API视图的包装器（wrappers）：
+- 用于基于函数视图的@api_view装饰器。
+- 用于基于类视图的APIView类。
+
+#### 增强请求与相应
+
+#### 异常处理与安全防护
+- 405 Method Not Allowed：
+    - 如果在 @api_view(['GET']) 中定义了只允许 GET，但用户发送了 POST，DRF 会在视图代码执行前拦截，并自动返回 405 错误。不需要在代码里写 if request.method != 'GET': return 405。
+
+- ParseError (解析错误)：
+    - 如果用户发送了格式错误的 JSON（比如少了一个括号），request.data 在尝试解析时会抛出异常。DRF 包装器会捕获这个 ParseError，并自动返回一个 400 Bad Request 响应，告诉客户端哪里出错了，而不是让服务器直接报 500 崩溃。
+#### 自定义错误类型
+假设我们希望所有的错误（包括 405、解析错误、验证错误等）都返回如下统一格式：
+
+```json
+{
+    "code": 405,
+    "message": "方法不被允许",
+    "data": null
+}
+```
+1. 编写自定义异常处理器 (my_app/exceptions.py)
+    ```python
+    from rest_framework.views import exception_handler
+    from rest_framework.response import Response
+    from rest_framework import status
+
+    def custom_exception_handler(exc, context):
+        """
+        自定义异常处理器
+        1. 先调用 DRF 默认的 exception_handler，获取标准响应
+        2. 如果标准响应存在，则覆盖其数据格式；否则处理未捕获的异常
+        """
+        # 调用 DRF 默认的异常处理，获取 Response 对象
+        # 这一步能自动处理 ParseError, AuthenticationError, PermissionDenied, MethodNotAllowed 等
+        response = exception_handler(exc, context)
+
+        if response is not None:
+            # --- 自定义响应格式开始 ---
+            custom_response_data = {
+                "code": response.status_code,
+                "message": response.data.get('detail', str(response.data)), # 尝试提取 detail 信息
+                "data": None
+            }
+            
+            # 针对验证错误（400）的特殊处理，通常 detail 是一个字典
+            if isinstance(response.data, dict) and 'detail' not in response.data:
+                custom_response_data['message'] = "输入数据验证失败"
+                custom_response_data['data'] = response.data # 把具体的字段错误放进去
+
+            response.data = custom_response_data
+            # --- 自定义响应格式结束 ---
+
+        return response
+    ```
+2. 在 settings.py 中注册
+    ```python
+    REST_FRAMEWORK = {
+        'EXCEPTION_HANDLER': 'my_project.my_app.exceptions.custom_exception_handler'
+        # 路径格式为：'项目名.应用名.文件名.函数名'
+    }
+    ```
+
+
 ### 模型序列化类 ModelSerializer
 该类型会自动检查对应的 Django Model 来自动生成序列化器字段
 #### 映射关系
