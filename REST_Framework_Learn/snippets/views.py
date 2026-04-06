@@ -1,8 +1,33 @@
 from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer, UserSerializer
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, renderers
 from django.contrib.auth.models import User
 from snippets.permission import IsOwnerOrReadOnly
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+
+
+@api_view(["GET"])
+def api_root(request, format=None):
+    """
+    根路径，客户端访问这个地址，就知道都有什么东西可以访问
+    """
+    return Response(
+        {
+            "users": reverse("user-list", request=request, format=format),
+            "snippets": reverse("snippet-list", request=request, format=format),
+        }
+    )
+
+
+class SnippetHighlight(generics.GenericAPIView):
+    queryset = Snippet.objects.all()
+    renderer_classes = (renderers.StaticHTMLRenderer,)
+
+    def get(self, request, *args, **kwargs):
+        snippet: Snippet = self.get_object()
+        return Response(snippet.highlighted)
 
 
 class SnippetList(generics.ListCreateAPIView):
