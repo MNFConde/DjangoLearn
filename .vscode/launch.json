@@ -1,51 +1,78 @@
 {
     "version": "0.2.0",
     "configurations": [
-        {
-            "name": "Django: 调试 polls app",
-            "type": "debugpy", // Python 扩展自带
-            "request": "launch",
-            "program": "${workspaceFolder}/djangotutorial/manage.py",
-            "args": [
-                "test",
-                "polls"
-            ],
-            "django": true,
-            "justMyCode": false // 设为 false 才能单步进入 Django 源码/第三方包
-        },
-        {
-            "name": "Django: 调试单个测试用例",
-            "type": "debugpy",
-            "request": "launch",
-            "program": "${workspaceFolder}/djangotutorial/manage.py",
-            "args": [
-                "test",
-                "${relativeFile}::${selectedText}"
-            ], // 选中的函数名
-            "django": true,
-            "justMyCode": false
-        },
-        {
-            "name": "pytest: 调试当前测试",
-            "type": "debugpy",
-            "request": "launch",
-            "module": "pytest",
-            "args": [
-                "${relativeFile}",
-                "-v",
-                "--no-cov"
-            ],
-            "django": true,
-            "justMyCode": false
-        },
+        // {
+        //     "name": "Django: 调试 polls app",
+        //     "type": "debugpy", // Python 扩展自带
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/djangotutorial/manage.py",
+        //     "args": [
+        //         "test",
+        //         "snippets"
+        //     ],
+        //     "django": true,
+        //     "justMyCode": false // 设为 false 才能单步进入 Django 源码/第三方包
+        // },
+        // {
+        //     "name": "Django: 调试 DRF app",
+        //     "type": "debugpy", // Python 扩展自带
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/REST_Framework_Learn/manage.py",
+        //     "args": [
+        //         "test",
+        //         "polls"
+        //     ],
+        //     "django": true,
+        //     "justMyCode": false // 设为 false 才能单步进入 Django 源码/第三方包
+        // },
+        // {
+        //     "name": "Django: 调试单个测试用例",
+        //     "type": "debugpy",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/djangotutorial/manage.py",
+        //     "args": [
+        //         "test",
+        //         "${relativeFile}::${selectedText}"
+        //     ], // 选中的函数名
+        //     "django": true,
+        //     "justMyCode": false
+        // },
+        // {
+        //     "name": "pytest: 调试当前测试",
+        //     "type": "debugpy",
+        //     "request": "launch",
+        //     "module": "pytest",
+        //     "args": [
+        //         "${relativeFile}",
+        //         "-v",
+        //         "--no-cov"
+        //     ],
+        //     "django": true,
+        //     "justMyCode": false
+        // },
         {
             "name": "Django: runserver + 单步",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/djangotutorial/manage.py",
+            "program": "${workspaceFolder}/${input:projectDir}/manage.py",
             "args": ["runserver", "--noreload"],   // --noreload 防止双进程
             "django": true,
-            "justMyCode": false                    // 可跳进 Django 源码
+            "justMyCode": false,                    // 可跳进 Django 源码
+            // 关键配置：告诉调试器工作目录在哪里，否则 manage.py 找不到自己的配置文件
+            "cwd": "${workspaceFolder}/${input:projectDir}",
         },
-    ]
+    ],
+    "inputs": [
+        {
+            "id": "projectDir",
+            "type": "pickString",  // 关键点：使用 pickString 类型
+            "description": "请选择 Django 项目文件夹",
+            // 这里列出你的选项
+            "options": [
+                "djangotutorial",
+                "REST_Framework_Learn",
+            ],
+            "default": "djangotutorial"
+        }
+    ],
 }

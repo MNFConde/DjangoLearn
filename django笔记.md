@@ -3,6 +3,9 @@
 1. `uv add Django` 来保证环境中有 django 可以使用
 
 
+## Django 调试
+
+
 ## django 相关
 ### django 常用命令
 1. 在 folder_name 文件夹下创建 project_name 项目：`django-admin startproject project_name folder_name`
@@ -556,6 +559,66 @@ if serializer.is_valid():
     # 翻译结果：变成可以保存的 User 对象
     user = serializer.save()
 ```
+#### `serializers.Serializer` 与 `serializers.ModelSerializer` 
+1. serializers.Serializer (基础序列化器)
+这是最基础的序列化器。它类似于 Django 的 Form 类，但与数据库模型没有直接关联。
+
+    - 特点：
+
+        - 手动定义字段：你需要显式地声明每一个字段。
+        - 灵活性高：不依赖于特定的 Django 模型，可以用来验证任何数据结构，或者聚合多个模型的数据。
+        - 手动实现 create 和 update：如果需要保存数据到数据库，必须手动编写 create() 和 update() 方法。
+    - 适用场景：
+
+        - 需要序列化的数据不直接对应单个数据库模型时（例如：API 的返回结果来自多个表的 JOIN 查询，或者包含计算字段）。
+        - 当你需要对数据的验证和保存逻辑进行完全的底层控制时。
+    ```python
+    from rest_framework import serializers
+    from .models import User
+
+    class UserSerializer(serializers.Serializer):
+        # 必须手动声明每一个字段
+        email = serializers.EmailField()
+        username = serializers.CharField(max_length=100)
+        created_at = serializers.DateTimeField()
+
+        # 手动实现创建逻辑
+        def create(self, validated_data):
+            return User.objects.create(**validated_data)
+
+        # 手动实现更新逻辑
+        def update(self, instance, validated_data):
+            instance.email = validated_data.get('email', instance.email)
+            instance.username = validated_data.get('username', instance.username)
+            instance.save()
+            return instance
+    ```
+2. serializers.ModelSerializer (模型序列化器)
+这是一个**快捷类**，它紧密地对应 Django 的 ModelForm 类。它通过元数据 Meta 类自动生成序列化器字段。
+
+    - 特点：
+
+        - 自动生成字段：根据指定的 Model 自动推断字段类型。
+        - 自动生成验证器：包含模型字段的验证器（如 max_length, required, unique 等）。
+        - 自动实现 create 和 update：默认提供了基于模型的保存和更新方法，通常不需要手动编写。
+        - 代码简洁：极大地减少了样板代码。
+    - 适用场景：
+
+        - 绝大多数情况下，直接对应 Django 模型创建或修改数据时。
+        - 快速构建标准的 CRUD（增删改查） API。
+    ```python
+    from rest_framework import serializers
+    from .models import User
+
+    class UserSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = User
+            # 指定需要序列化的字段，'__all__' 表示所有字段
+            fields = ('id', 'username', 'email', 'created_at')
+            # fields = '__all__'
+    ```
+
+
 #### 其它功能
 1. 数据验证：指定字段会做检查，如邮箱字段，传入的数据并非邮箱格式则会报错。在定义字段类型时，就有隐含的验证规则，并且也可以通过参数显式指定规则，以及自定义规则（顺序为 字段类型验证（隐式） -> 字段参数验证（显式） -> 自定义验证方法（单字段验证） -> 全局验证方法（多字段）
     1. 隐式验证规则：指定的 Field 类型
@@ -1005,6 +1068,33 @@ REST框架提供了两个可用于编写API视图的包装器（wrappers）：
 1. 对客户端解耦，不需要客户端依赖特定的拼接规则
 2. HATEOAS 原则(Hypermedia as the Engine of Application State - 超媒体作为应用状态引擎) 指明服务器应该告诉客户端下一步该做什么而不是客户端去猜下一步该做什么
 3. 可读性高
+
+### DRF 快速添加登陆功能
+官方文档：
+> 我们可以通过编辑项目级别的urls.py文件中的URLconf来添加可浏览的API使用的登录视图。
+> 
+> 在文件顶部添加以下导入：
+> ```python
+> from django.conf.urls import include
+> 而且，在文件末尾添加一个模式（pattern）以包括可浏览的API的登录和注销视图。
+> 
+> urlpatterns += [
+>     url(r'^api-auth/', include('rest_framework.urls',
+>                                namespace='rest_framework')),
+> ]
+> ```
+> 模式的 `r'^api-auth/'` 部分实际上可以是你要使用的任何URL。唯一的限制是包含的URL必须使用'rest_framework'命名空间。在Django 1.9以上的版本中，REST框架将设置命名空间，因此你可以将其删除。
+> 
+> 现在，如果你再次打开浏览器并刷新页面，你将在页面右上角看到一个“登录”链接。如果你用早期创建的用户登录，就可以再次创建代码片段。
+
+1. include：
+    - include 可以引用其它的 url 配置文件
+    - 使用时，会将 `被 include 的配置` 挂载在当前的 urls 配置中，并且带上指定的前缀，如 `url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),` 中的 `r'^api-auth/'` 就是前缀
+2. `namespace='rest_framework'`
+    - namespace 是为了区分可能存在的同名 url 而做的标记
+    - DRF 自带的页面模板指定了如果存在一个名叫 `rest_framework` 的 namespace，那么就会渲染登陆部分的页面（1.9 版本之前）
+    - 最新版不需要指定
+
 
 ## Python 相关
 ### import

@@ -1,6 +1,9 @@
 from django.db import models
 from pygments.lexers import get_all_lexers
 from pygments.styles import get_all_styles
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters.html import HtmlFormatter
+from pygments import highlight
 
 # Create your models here.
 # 词法分析器模块
@@ -19,6 +22,23 @@ class Snippet(models.Model):
         choices=LANGUAGE_CHOICES, default="python", max_length=100
     )
     style = models.CharField(choices=STYLE_CHOICES, default="friendly", max_length=100)
+    owner = models.ForeignKey(
+        "auth.User", related_name="snippets", on_delete=models.CASCADE
+    )
+    highlighted = models.TextField(default="")
 
     class Meta:
         ordering = ("created",)
+
+    def save(self, *args, **kwargs):
+        """
+        使用`pygments`库创建一个高亮显示的HTML表示代码段。
+        """
+        lexer = get_lexer_by_name(self.language)
+        linenos = self.linenos and "table" or False
+        options = self.title and {"title": self.title} or {}
+        formatter = HtmlFormatter(
+            style=self.style, linenos=linenos, full=True, **options
+        )
+        self.highlighted = highlight(self.code, lexer, formatter)
+        super(Snippet, self).save(*args, **kwargs)
