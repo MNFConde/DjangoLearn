@@ -1064,6 +1064,17 @@ REST框架提供了两个可用于编写API视图的包装器（wrappers）：
     - 需要修改吗？ -> 加 Update。
     - 需要删除吗？ -> 加 Destroy。
 
+### ViewSet 与 权限控制
+#### ViewSet
+ViewSet 是一系列 View 的集合，通过一个类来提供多个 View 提供的功能
+
+- ModelViewSet：自动提供`list`，`create`，`retrieve`，`update`和`destroy`操作
+- ReadOnlyModelViewSet： 自动提供`list`和`detail`操作
+
+#### 权限控制
+1. 首先看 `get_permissions` 是否有被重写，这个函数可以动态的决定哪个方法需要哪个权限
+2. 如果 `get_permissions` 没有被重写，那么就按照 `permission_classes`  指定的权限进行， `permission_classes` 指定的权限是静态的，非安全方法（安全方法包括：GET, HEAD, OPTIONS）都需要拥有对应权限
+
 ### "超链接是好的 RESTful 设计"
 1. 对客户端解耦，不需要客户端依赖特定的拼接规则
 2. HATEOAS 原则(Hypermedia as the Engine of Application State - 超媒体作为应用状态引擎) 指明服务器应该告诉客户端下一步该做什么而不是客户端去猜下一步该做什么
