@@ -1,6 +1,6 @@
 from snippets.models import Snippet
 from snippets.serializers import SnippetSerializer, UserSerializer
-from rest_framework import generics, permissions, renderers, viewsets
+from rest_framework import permissions, renderers, viewsets
 from django.contrib.auth.models import User
 from snippets.permission import IsOwnerOrReadOnly
 from rest_framework.decorators import api_view, action
@@ -35,7 +35,7 @@ class SnippetViewSet(viewsets.ModelViewSet):
         IsOwnerOrReadOnly,
     )
 
-    @action(renderer_classes=[renderers.StaticHTMLRenderer])
+    @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
     def highlight(self, request, *args, **kwargs):
         snippet = self.get_object()
         return Response(snippet.highlighted)

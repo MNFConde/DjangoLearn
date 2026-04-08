@@ -1075,6 +1075,58 @@ ViewSet 是一系列 View 的集合，通过一个类来提供多个 View 提供
 1. 首先看 `get_permissions` 是否有被重写，这个函数可以动态的决定哪个方法需要哪个权限
 2. 如果 `get_permissions` 没有被重写，那么就按照 `permission_classes`  指定的权限进行， `permission_classes` 指定的权限是静态的，非安全方法（安全方法包括：GET, HEAD, OPTIONS）都需要拥有对应权限
 
+### 格式后缀
+格式后缀是附加在 URL 末尾的简短标识符，用于指示服务器应该返回哪种格式的数据。例如：
+
+- /snippets/ - 返回默认格式（通常是 JSON）
+- /snippets.json - 明确请求 JSON 格式
+- /snippets.html - 请求 HTML 格式
+- /snippets.api - 请求 API 浏览器可读的格式
+
+当 DRF 接收到带有格式后缀的请求时，它会：
+
+1. 解析 URL 中的格式后缀
+2. 根据后缀选择适当的渲染器（renderer）
+3. 使用选定的渲染器将数据转换为指定格式
+4. 返回格式化后的响应
+
+#### format_suffix_patterns 给所有的 url 配置可选格式后缀
+```python
+from rest_framework.urlpatterns import format_suffix_patterns
+from django.urls import path
+from snippets import views
+
+urlpatterns = [
+    path('snippets/', views.SnippetList.as_view()),
+    path('snippets/<int:pk>/', views.SnippetDetail.as_view()),
+]
+
+# 启用格式后缀
+urlpatterns = format_suffix_patterns(urlpatterns)
+```
+
+#### @action 给单个视图指定特定的渲染器
+```python
+from rest_framework import renderers
+from rest_framework.decorators import action
+
+class SnippetViewSet(viewsets.ModelViewSet):
+    # ... 其他代码 ...
+    
+    @action(detail=True, renderer_classes=[renderers.StaticHTMLRenderer])
+    def highlight(self, request, *args, **kwargs):
+        snippet = self.get_object()
+        return Response(snippet.highlighted)
+
+```
+使用这种方式，特定的 URL 端点会使用指定的渲染器，例如 /snippets/{id}/highlight/ 会始终返回 HTML 格式。
+
+#### 路由器自动提供
+使用 DefaultRouter 或其他路由器，通常不需要额外配置格式后缀，因为路由器已经提供了基本的 URL 结构
+
+#### 冲突情况
+路由器与 `format_suffix_patterns` 会有冲突，但是 `@action` 分别与这两者都没有冲突
+
 ### "超链接是好的 RESTful 设计"
 1. 对客户端解耦，不需要客户端依赖特定的拼接规则
 2. HATEOAS 原则(Hypermedia as the Engine of Application State - 超媒体作为应用状态引擎) 指明服务器应该告诉客户端下一步该做什么而不是客户端去猜下一步该做什么
